@@ -13,6 +13,11 @@ export function ProductCard({ product }: ProductCardProps) {
           alt={product.name}
           className="w-full h-full object-cover"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = '/placeholder.jpg';
+            console.error('Image failed, replaced with placeholder:', product.image_url);
+          }}
         />
       </div>
       <div className="p-4">
