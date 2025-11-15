@@ -362,16 +362,28 @@ async function seedDatabase() {
   console.log('Starting database seeding...');
 
   try {
-    const { data: existingProducts } = await supabase
+    // Check existing products
+    const { data: existingProducts, error: checkError } = await supabase
       .from('products')
-      .select('id')
-      .limit(1);
+      .select('id, name')
+      .limit(5);
 
+    if (checkError) {
+      console.error('Error checking existing products:', checkError);
+      throw checkError;
+    }
+
+    console.log(`Found ${existingProducts?.length || 0} existing products in database`);
+    
     if (existingProducts && existingProducts.length > 0) {
-      console.log('Database already contains products. Skipping seed.');
+      console.log('Sample existing products:', existingProducts.map(p => p.name));
+      console.log('\nDatabase already contains products.');
+      console.log('To force re-seed, delete existing products first or modify this script.');
       return;
     }
 
+    console.log('No products found. Inserting sample products...');
+    
     const { data, error } = await supabase
       .from('products')
       .insert(sampleProducts)
@@ -382,7 +394,7 @@ async function seedDatabase() {
       throw error;
     }
 
-    console.log(`Successfully added ${data?.length || 0} products to the database!`);
+    console.log(`✅ Successfully added ${data?.length || 0} products to the database!`);
   } catch (error) {
     console.error('Failed to seed database:', error);
     throw error;
